@@ -30,10 +30,65 @@
 
 	<div class="container">
   	<div class="centered">
-  		<h3>I'll be updating my blogs in this page. It's coming soon.</h3>
-  		<h4>Topic</h4>
-  		<p>Positive Sequence, Negative Sequence and Zero Sequence Impedance in Power System.</p>
+  		<h3>Blog</h3>
+  		<div id="blogPosts">
+  			<p>Loading blog posts...</p>
+  		</div>
 	</div>
+
+<script>
+// Function to escape HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Function to format date
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+}
+
+// Load and display blog posts
+async function loadBlogPosts() {
+    try {
+        const response = await fetch('/api/posts');
+        const data = await response.json();
+        const posts = data.posts || [];
+        
+        const blogContainer = document.getElementById('blogPosts');
+        
+        if (posts.length === 0) {
+            blogContainer.innerHTML = '<p>No blog posts yet. Check back soon!</p>';
+            return;
+        }
+        
+        blogContainer.innerHTML = posts.map(post => `
+            <article style="margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid #eee;">
+                <h4>${escapeHtml(post.title)}</h4>
+                <div style="color: #666; font-size: 14px; margin-bottom: 15px;">
+                    By ${escapeHtml(post.author)} on ${formatDate(post.created_date)}
+                    ${post.updated_date !== post.created_date ? `<br>Updated: ${formatDate(post.updated_date)}` : ''}
+                </div>
+                <div style="line-height: 1.6; white-space: pre-wrap;">${escapeHtml(post.content)}</div>
+            </article>
+        `).join('');
+        
+    } catch (error) {
+        console.error('Error loading blog posts:', error);
+        document.getElementById('blogPosts').innerHTML = 
+            '<p>Error loading blog posts. Please try again later.</p>';
+    }
+}
+
+// Load posts when page loads
+document.addEventListener('DOMContentLoaded', loadBlogPosts);
+</script>
 
 
 </body>
